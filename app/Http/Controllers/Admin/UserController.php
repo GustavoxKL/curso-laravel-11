@@ -7,6 +7,8 @@ use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Redirect;
 
 class UserController extends Controller
 {
@@ -55,5 +57,29 @@ class UserController extends Controller
         return redirect()
             ->route('users.index')
             ->with('success', 'Usuário editado com sucesso');
+    }
+
+    public function show(string $id){
+
+        if(!$user = User::find($id)){
+            return redirect()->route('users.index')->with('message', 'Usuário não encontrado');
+        }
+
+        return view('admin.users.show', compact('user'));
+    }
+
+    public function destroy(string $id){
+
+        if(!$user = User::find($id)){
+            return redirect()->route('users.index')->with('message', 'Usuário não encontrado');
+        }
+        if(Auth::user()->id === $user->id){
+            return back()->with('message', 'Você não pode deletar o seu próprio perfil');
+        }
+        $user->delete();
+
+        return redirect()
+            ->route('users.index')
+            ->with('success', 'Usuário deletado com sucesso');
     }
 }
